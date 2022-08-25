@@ -17,7 +17,7 @@ contract ToDo {
 
   mapping(uint => Task) todo;
 
-  Task[] public todos;
+  Task[] todos;
 
   function viewTask(uint _id) public view returns(string memory _text, string memory _category, bool _completed){
    _text =  todo[_id].text;

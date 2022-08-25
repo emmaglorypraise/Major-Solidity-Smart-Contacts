@@ -7,55 +7,24 @@ pragma solidity ^0.8.0;
 
   /// set auction function and set auction price as current bid, set require to be higher than current bid,  after bidding, the current bid should increase
  
-
-interface IERC721 {
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint tokenId
-    ) external;
-
-    function transferFrom(
-        address,
-        address,
-        uint
-    ) external;
-}
-
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+// import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract AuctionNFT  is ERC721, Ownable {
-    using Counters for Counters.Counter;
-
-    Counters.Counter private _tokenIdCounter;
 
     constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {
     }
 
+    ///  @dev mint to a random address with the safeMint function
+    /// then deploy Auction contract while setting address minted to as seller
     function safeMint(address to) public {
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
+        uint256 tokenId = 20;
         _safeMint(to, tokenId);
     }
 
-    function transferFrom(
-        address,
-        address,
-        uint
-    ) external;
-
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint tokenId
-    ) external;
-
-
 }
-
 
 contract Auction {
   
@@ -82,12 +51,12 @@ contract Auction {
 
   mapping (address => Bidder) public returnOutBids;
 
-  /// check aution time
+  /// @dev check aution time
   modifier checkAuctionTime {
-    require(auctionTime > block.timestamp, "Not Auction time yet");
+    require(auctionTime < block.timestamp, "Not Auction time yet");
     _;
   }
-  /// dev check if auction has started
+  /// @dev check if auction has started
   modifier checkAuctionStatus {
     require(AuctionTimeOn == true, "Auction not started");
     _;
@@ -136,7 +105,7 @@ contract Auction {
     nftId = _nftId;
     seller = _seller;
     startingPrice = _startingPrice;
-    auctionTime = block.timestamp + _biddingTime;
+    auctionTime = block.timestamp + _biddingTime; // e.g. 4 or 5 to avoid waiting for a long time while testing
   }
 
   /// @dev start auction function
@@ -160,7 +129,7 @@ contract Auction {
     AuctionTimeOn = false;
     if (highestBidder != address(0)) {
             nft.safeTransferFrom(address(this), highestBidder, nftId);
-            seller.transfer(highestBid);
+          payable(seller).transfer(highestBid);
     } else {
         nft.safeTransferFrom(address(this), seller, nftId);
     }

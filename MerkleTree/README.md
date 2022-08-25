@@ -1,4 +1,8 @@
-# Sample Hardhat Project
+# Merkle Tree
+
+- MerkleTree.sol
+- merkletree.js - for getting root, leaf, etc
+- deploy.ts - for deploying and interacting with contract
 
 This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
 

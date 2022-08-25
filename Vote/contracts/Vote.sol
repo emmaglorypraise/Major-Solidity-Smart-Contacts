@@ -14,8 +14,6 @@ contract Vote {
 
   uint public votersCount;
 
-  uint public resultCount;
-
   string votePassCode;
 
   uint electionTime = block.timestamp + 30 minutes;
@@ -64,6 +62,7 @@ contract Vote {
       voteCount = candidateNumber[id].voteCount;
   }
 
+  /// @dev Returns all candidate names and total votes
    function viewResults() external view returns (string[] memory, uint[] memory) {
         string[] memory candidateName = new string[](candidateCount);
         uint[] memory candidateVoteCounts = new uint[](candidateCount);
@@ -73,17 +72,6 @@ contract Vote {
         }
         return (candidateName, candidateVoteCounts);
   }
-
-   function getCandidates() external view returns (string[] memory, uint[] memory) {
-        string[] memory names = new string[](candidateCount);
-        uint[] memory voteCounts = new uint[](candidateCount);
-        for (uint i = 1; i < candidateCount; i++) {
-            names[i] = candidateNumber[i].candidateName;
-            voteCounts[i] = candidateNumber[i].voteCount;
-        }
-        return (names, voteCounts);
-    }
-
 
   /// @dev returns if a voter has already voted
   function viewVoterDetails(address address_) public view returns (bool voted){
@@ -98,7 +86,6 @@ contract Vote {
     candidate.candidateParty = candidateParty_;
     candidate.voteCount = 0;
     candidateCount++;
-    resultCount = candidateCount + 1;
     return id;
   }
 

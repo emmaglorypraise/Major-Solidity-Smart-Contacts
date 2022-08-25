@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 async function main() {
 
   const MerkleTreeNFT = await ethers.getContractFactory("MerkleTreeNFT");
-  const merkleTreeNFT = await MerkleTreeNFT.deploy("merkleroot");
+  const merkleTreeNFT = await MerkleTreeNFT.deploy("input merkleroot");
 
   await merkleTreeNFT.deployed();
 
