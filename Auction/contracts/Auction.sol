@@ -19,6 +19,20 @@ pragma solidity ^0.8.0;
   // transfer bid
   // mapping to track bidders
 
+interface IERC721 {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint tokenId
+    ) external;
+
+    function transferFrom(
+        address,
+        address,
+        uint
+    ) external;
+}
+
 contract Auction {
   
   uint public startingPrice;
@@ -29,17 +43,22 @@ contract Auction {
 
   address public highestBidder;
 
+  IERC721 public nft;
+  
+  uint public nftId;
+
   bool public AuctionTimeOn;
 
-  uint auctionTime = block.timestamp + 30 minutes;
+  uint auctionTime;
 
   struct Bidder{
     bool bidded;
+    uint amount;
   }
 
-  mapping (address => uint) public returnOutBids;
+  mapping (address => Bidder) public returnOutBids;
 
-  mapping (address => Bidder) public checkBidders;
+  // mapping (address => Bidder) public checkBidders;
 
   modifier checkAuctionTime {
     require(auctionTime > block.timestamp, "Not Auction time yet");
@@ -62,14 +81,35 @@ contract Auction {
     if (highestBid == 0) {
       highestBid +=  msg.value;
       highestBidder = msg.sender;
-      startingPrice = startingPrice + 1000000000000000000;
+      returnOutBids[highestBidder].amount = highestBid;
+      startingPrice = highestBid;
     } 
+
+    if (msg.value > highestBid) {
+      returnOutBids[highestBidder].amount = highestBid;
+      highestBid =  msg.value;
+      highestBidder = msg.sender;
+      startingPrice = highestBid;
+    }
+
+    if (msg.value < highestBid) {
+      returnOutBids[msg.sender].amount = msg.value;
+      startingPrice = highestBid;
+    }
     _;
   }
 
-  constructor(){
-    seller = msg.sender;
-    startingPrice = 3000000000000000000;
+  modifier endAuctionCheck {
+    require(AuctionTimeOn == false, "Wait for auction to end");
+    _;
+  }
+
+  constructor(address _nft, uint _nftId, uint _startingPrice, uint _biddingTime, address _seller){
+    nft = IERC721(_nft);
+    nftId = _nftId;
+    seller = _seller;
+    startingPrice = _startingPrice;
+    auctionTime = block.timestamp + _biddingTime;
   }
 
   function startAuction() public {
@@ -78,8 +118,9 @@ contract Auction {
   }
 
   function bid() public payable checkAuctionTime checkAuctionStatus checkBidderStatus checkHighestBidder  {
-    Bidder storage checkBidder =  checkBidders[msg.sender];
+    Bidder storage checkBidder =  returnOutBids[msg.sender];
     require(checkBidder.bidded == false, "You have already bidded, wait for the result!");
+    
     checkBidder.bidded = true;
   }
 
@@ -91,20 +132,19 @@ contract Auction {
     payable(seller).transfer(msg.value);
   }
 
-  function withdrawOutBids() public payable  returns (bool result) {
-    require(AuctionTimeOn = false, "Wait for auction to end");
+  function withdrawOutBids() public payable endAuctionCheck returns (bool success) {
 
-    uint amount = returnOutBids[msg.sender];
+    uint amount = returnOutBids[msg.sender].amount;
 
     require (amount > 0, "You dont have any money to withdraw");
 
-    returnOutBids[msg.sender] = 0;
+    returnOutBids[msg.sender].amount = 0;
 
-    // require(msg.sender != 0000, "Invalid address");
+    require(msg.sender != address(0), "Invalid address");
     
-    payable(msg.sender).transfer(10000);
+    payable(msg.sender).transfer(amount);
 
-    return result;
+    return success;
   }
 
 }
