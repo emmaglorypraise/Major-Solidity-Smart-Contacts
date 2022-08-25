@@ -5,7 +5,11 @@
   "author": "Glory Praise Emmanuel",
   "license": "MIT",
   "dependencies": {
-    "hardhat": "^2.10.2"
+    "hardhat": "^2.10.2",
+    "keccak256": "^1.0.6",
+    "merkletreejs": "^0.2.32",
+    "@openzeppelin/contracts": "^4.7.3",
+    "dotenv": "^16.0.1"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
